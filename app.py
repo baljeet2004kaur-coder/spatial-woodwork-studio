@@ -5,82 +5,36 @@ import requests
 from io import BytesIO
 import random
 
-st.set_page_config(page_title="Aesthetic Studio | Modern Interior Millwork", layout="wide")
-
+st.set_page_config(page_title="Gen-Vibe Interior Studio", layout="wide")
 st.title("✨ Gen-Vibe Aesthetic Interior & TV Unit Studio")
-st.caption("Minimalist textures, organic arches, micro-fluting, and automated architectural pricing.")
+st.caption("Minimalist curves, micro-fluting, limewash aesthetics, and auto estimation.")
 
-# ----------------- SIDEBAR DESIGN MATRIX -----------------
-st.sidebar.header("🎨 Contemporary Design Direction")
+st.sidebar.header("🎨 Design Matrix")
+wood_style = st.sidebar.selectbox("Feature Style", [
+    "Organic Wabi-Sabi Asymmetrical Curve with Micro-Slats",
+    "Pill-Shaped Rounded Arch Niche with Halo Backlight",
+    "Cantilevered Minimalist Floating Console with Rounded Edges",
+    "Japandi Split Accent: Limewash Plaster & Fine Fluting"
+])
 
-wood_style = st.sidebar.selectbox(
-    "Aesthetic Architecture & Feature Style",
-    [
-        "Organic Wabi-Sabi Asymmetrical Curve with Micro-Slats",
-        "Pill-Shaped Rounded Arch Niche with Soft Halo Backlight",
-        "Cantilevered Minimalist Floating Console with Rounded Edges",
-        "Japandi Split Accent: Limewash Plaster meets Ultra-Fine Fluting",
-        "Curved Wave S-Partition with Integrated Floating Display Ledge",
-        "Seamless Monolithic Panel with Concealed Shadow Gaps"
-    ]
-)
+color_palette = st.sidebar.selectbox("Material Palette", [
+    "Oatmilk Crema Limewash + Nordic Bleached Birch",
+    "Chalk White Microcement + Biscuit Smoked Oak",
+    "Warm Greige Travertine + Soft Ash Micro-Slats",
+    "Matte Taupe Clay + Honey Blonde Oak"
+])
 
-color_palette = st.sidebar.selectbox(
-    "Aesthetic Material & Tonal Palette",
-    [
-        "Oatmilk Crema Limewash + Pale Nordic Bleached Birch",
-        "Chalk White Microcement + Biscuit Smoked Oak",
-        "Warm Greige Travertine + Soft Ash Micro-Slats",
-        "Matte Taupe Clay + Honey Blonde Oak",
-        "Earthy Sage Stone Texture + Natural Rattan & Warm Timber",
-        "Minimalist Desert Sand + Fluted Muted Linen Veneer"
-    ]
-)
-
-accent_trim = st.sidebar.selectbox(
-    "Modern Detail Accents",
-    [
-        "Ultra-Slim Concealed Shadow-Gaps (Zero Trim)",
-        "Brushed Champagne Micro-Edging",
-        "Frosted White Acrylic Diffuser Trim",
-        "Textured Raw Travertine Slab Accent"
-    ]
-)
-
-vibe_theme = st.sidebar.selectbox(
-    "Gen-Vibe / Mood Direction",
-    [
-        "Pinterest Dream Home (Bright, Airy, Soft Warm Lighting)",
-        "Architectural Digest Minimalist (Sculptural Curves & Raw Stone)",
-        "Serene Japandi Loft (Zen, Natural Daylight, Biophilic Warmth)",
-        "Cozy Modern Scandinavian (Muted Neutrals, Calming Ambient Glow)"
-    ]
-)
+vibe_theme = st.sidebar.selectbox("Vibe Direction", [
+    "Pinterest Dream Home (Airy, Soft Warm Lighting)",
+    "Architectural Digest Minimalist (Sculptural Curves & Raw Stone)",
+    "Serene Japandi Loft (Biophilic Warmth & Daylight)"
+])
 
 st.sidebar.divider()
-st.sidebar.header("📐 Wall Dimensions (ft)")
-wall_w = st.sidebar.number_input("Width (Feet)", min_value=4.0, max_value=40.0, value=12.0, step=0.5)
-wall_h = st.sidebar.number_input("Height (Feet)", min_value=6.0, max_value=16.0, value=9.5, step=0.5)
-
-st.sidebar.divider()
-st.sidebar.header("💰 Commercial Estimates (₹ INR)")
-substrate = st.sidebar.selectbox(
-    "Substrate & Texture System",
-    [
-        "HDHMR Board + PU Textured Limewash Finish (₹380/sqft)",
-        "Calibrated BWP Ply + Natural Scandinavian Veneer (₹480/sqft)",
-        "Custom CNC Curved Framework + Microcement Coat (₹580/sqft)"
-    ]
-)
-
-rates = {
-    "HDHMR Board + PU Textured Limewash Finish (₹380/sqft)": 380,
-    "Calibrated BWP Ply + Natural Scandinavian Veneer (₹480/sqft)": 480,
-    "Custom CNC Curved Framework + Microcement Coat (₹580/sqft)": 580
-}
-
-sqft_mat_rate = st.sidebar.number_input("Material Rate (₹/sqft)", value=rates[substrate], step=20)
-sqft_labor_rate = st.sidebar.number_input("Specialized Artisan Labor (₹/sqft)", value=180, step=10)
+wall_w = st.sidebar.number_input("Width (ft)", min_value=4.0, max_value=30.0, value=12.0, step=0.5)
+wall_h = st.sidebar.number_input("Height (ft)", min_value=6.0, max_value=15.0, value=9.5, step=0.5)
+sqft_mat_rate = st.sidebar.number_input("Material Rate (₹/sqft)", value=420, step=20)
+sqft_labor_rate = st.sidebar.number_input("Artisan Labor Rate (₹/sqft)", value=180, step=10)
 
 # Calculations
 sqft = wall_w * wall_h
@@ -88,125 +42,106 @@ ply_sheets = int((sqft * 1.15) // 32) + 1
 slat_linear_ft = int(wall_w * (wall_h / 0.35))
 led_strip_ft = wall_w * 2.2
 
-total_mat = sqft * sqft_mat_rate
-total_labor = sqft * sqft_labor_rate
-total_led = led_strip_ft * 210
-grand_total = total_mat + total_labor + total_led
+cost_mat = sqft * sqft_mat_rate
+cost_labor = sqft * sqft_labor_rate
+cost_led = led_strip_ft * 210
+grand_total = cost_mat + cost_labor + cost_led
 
-# ----------------- MAIN INTERFACE -----------------
-input_mode = st.radio("Choose Input:", ["Upload Room Photo", "Use Curated Modern Living Wall"], horizontal=True)
-
+input_mode = st.radio("Wall Input:", ["Curated Wall Preset", "Upload Photo"], horizontal=True)
 active_image = None
 
-if input_mode == "Upload Room Photo":
-    uploaded_file = st.file_uploader("Upload wall photo", type=["jpg", "png", "jpeg"])
-    if uploaded_file is not None:
+if input_mode == "Upload Photo":
+    uploaded = st.file_uploader("Upload wall photo", type=["jpg", "png", "jpeg"])
+    if uploaded:
         try:
-            active_image = Image.open(uploaded_file)
+            active_image = Image.open(uploaded)
         except Exception:
-            st.error("⚠️ Invalid image format. Please upload a standard JPG or PNG.")
+            st.error("Invalid image format.")
 else:
-    preset_choice = st.selectbox(
-        "Select Room Layout:",
-        [
-            "Modern Neutral Living Room Wall",
-            "Minimalist Master Suite Bed Wall",
-            "Cozy Studio Lounge Nook"
-        ]
-    )
-    demo_urls = {
-        "Modern Neutral Living Room Wall": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=900&q=80",
-        "Minimalist Master Suite Bed Wall": "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=900&q=80",
-        "Cozy Studio Lounge Nook": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80"
-    }
+    demo_url = "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=900&q=80"
     try:
-        resp = requests.get(demo_urls[preset_choice], timeout=10)
-        active_image = Image.open(BytesIO(resp.content))
+        r_preset = requests.get(demo_url, timeout=10)
+        active_image = Image.open(BytesIO(r_preset.content))
     except Exception:
-        st.warning("Preset offline. Please upload a photo.")
+        st.warning("Preset offline. Please upload an image.")
 
-# ----------------- RENDERING & RESULTS -----------------
-if active_image is not None:
-    col_l, col_r = st.columns([1, 1.25])
-    with col_l:
-        st.subheader("Base Space Reference")
+if active_image:
+    c1, c2 = st.columns([1, 1.25])
+    with c1:
+        st.subheader("Base Space")
         st.image(active_image, use_container_width=True)
-    with col_r:
-        st.subheader("Modern Aesthetic Transformation")
-        
-        custom_notes = st.text_input(
-            "Add Specific Design Customizations (Optional):",
-            placeholder="e.g. Add organic oval mirror, travertine ledge, pampas decor, flush OLED TV"
-        )
-        
-        custom_extra = f", featuring {custom_notes}" if custom_notes.strip() else ""
+
+    with c2:
+        st.subheader("Aesthetic Concept")
+        custom_notes = st.text_input("Custom Details (Optional):", placeholder="e.g. travertine ledge, pampas grass, OLED TV")
+        note_str = f", {custom_notes}" if custom_notes.strip() else ""
 
         if st.button("✨ Generate Design", type="primary"):
-            with st.spinner("Generating modern aesthetic design render..."):
-                rand_seed = random.randint(1000, 999999)
-                
-                clean_prompt = (
-                    f"award winning modern interior, {vibe_theme}, "
-                    f"minimalist aesthetic TV accent wall, {wood_style}, "
-                    f"material {color_palette}, {accent_trim}, "
-                    f"floating rounded credenza, warm ambient 2700k LED halo backlighting, "
-                    f"architectural digest showcase, photorealistic 8k{custom_extra}"
+            with st.spinner("Generating modern design..."):
+                seed = random.randint(1000, 999999)
+                prompt = (
+                    f"Pinterest aesthetic interior photography, {vibe_theme}, "
+                    f"luxury modern TV entertainment wall, {wood_style}, "
+                    f"materials {color_palette}, floating credenza, "
+                    f"warm 2700k indirect LED halo lighting, soft daylight, 8k resolution{note_str}"
                 )
-                
-                encoded_p = urllib.parse.quote(clean_prompt)
+                enc_p = urllib.parse.quote(prompt)
                 headers = {"User-Agent": "Mozilla/5.0"}
-                
-                candidate_urls = [
-                    f"https://image.pollinations.ai/prompt/{encoded_p}?width=800&height=600&nologo=true&seed={rand_seed}",
-                    f"https://image.pollinations.ai/prompt/{encoded_p}?width=768&height=512&seed={rand_seed}&model=turbo"
+                urls = [
+                    f"https://image.pollinations.ai/prompt/{enc_p}?width=800&height=600&nologo=true&seed={seed}",
+                    f"https://image.pollinations.ai/prompt/{enc_p}?width=768&height=512&seed={seed}&model=turbo"
                 ]
-                
+
                 img_data = None
-                for url in candidate_urls:
+                for u in urls:
                     try:
-                        r = requests.get(url, headers=headers, timeout=20)
-                        if r.status_code == 200 and len(r.content) > 5000:
-                            img_data = r.content
+                        res = requests.get(u, headers=headers, timeout=20)
+                        if res.status_code == 200 and len(res.content) > 5000:
+                            img_data = res.content
                             break
                     except Exception:
                         continue
-                
-                if img_data is None:
-                    fallback_url = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&q=80"
+
+                if not img_data:
                     try:
-                        r_fallback = requests.get(fallback_url, timeout=10)
-                        if r_fallback.status_code == 200:
-                            img_data = r_fallback.content
+                        res_fb = requests.get("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&q=80", timeout=10)
+                        if res_fb.status_code == 200:
+                            img_data = res_fb.content
                     except Exception:
                         img_data = None
-                
+
                 if img_data:
                     st.image(img_data, use_container_width=True)
                     st.success("Design concept ready!")
-                    
-                    st.download_button(
-                        label="💾 Download Render (PNG)",
-                        data=img_data,
-                        file_name=f"Aesthetic_Design_{rand_seed}.png",
-                        mime="image/png"
-                    )
+                    st.download_button("💾 Save Render (PNG)", img_data, f"Aesthetic_{seed}.png", "image/png")
                 else:
-                    st.error("Connection interrupted. Please tap 'Generate Design' once again.")
+                    st.error("Server busy. Please click 'Generate Design' once more.")
 
     st.divider()
-    
-    # Material Breakdown
-    st.subheader("📋 Modern Millwork Specs & Cut Sheet")
+    st.subheader("📋 Materials & Cut Sheet")
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Wall Face Area", f"{sqft:.1f} sq.ft.")
-    m2.metric("Core Board Sheets (8x4)", f"{ply_sheets} Sheets")
-    m3.metric("Micro-Ribbed Battens", f"~{slat_linear_ft} RFT")
-    m4.metric("Diffuse LED Halo Channels", f"~{led_strip_ft:.1f} RFT")
+    m1.metric("Area", f"{sqft:.1f} sq.ft.")
+    m2.metric("Core Sheets (8x4)", f"{ply_sheets}")
+    m3.metric("Micro Slats", f"~{slat_linear_ft} RFT")
+    m4.metric("Halo LED", f"~{led_strip_ft:.1f} RFT")
 
-    # Budget Breakdown
-    st.subheader("💵 Financial Estimation (INR)")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Materials & Textures", f"₹{total_mat:,.0f}")
-    c2.metric("Artisan Joinery & Polish", f"₹{total_labor:,.0f}")
-    c3.metric("Ambient Halo Lighting", f"₹{total_led:,.0f}")
-    c4.metric("Estimated Client
+    st.subheader("💵 Project Budget")
+    b1, b2, b3, b4 = st.columns(4)
+    b1.metric("Materials", f"₹{cost_mat:,.0f}")
+    b2.metric("Labor", f"₹{cost_labor:,.0f}")
+    b3.metric("LED Track", f"₹{cost_led:,.0f}")
+    b4.metric("Total Estimate", f"₹{grand_total:,.0f}")
+
+    quote_body = (
+        f"AESTHETIC MILLWORK QUOTE\n"
+        f"Style: {wood_style}\nPalette: {color_palette}\n"
+        f"Dimensions: {wall_w}ft x {wall_h}ft ({sqft:.1f} sq.ft)\n"
+        f"Core Sheets (8x4): {ply_sheets}\n"
+        f"Material Cost: ₹{cost_mat:,.2f}\n"
+        f"Labor Cost: ₹{cost_labor:,.2f}\n"
+        f"LED Channels: ₹{cost_led:,.2f}\n"
+        f"ESTIMATED TOTAL: ₹{grand_total:,.2f}\n"
+    )
+    st.download_button("📄 Download Client Quote (.txt)", quote_body, "Quote.txt", "text/plain")
+else:
+    st.info("Select preset wall or upload photo to begin.")
