@@ -148,4 +148,81 @@ if active_image is not None:
                 prompt = (
                     f"Viral Pinterest interior aesthetic, Kinfolk style photography, {vibe_theme}, "
                     f"ultra-modern minimalist TV entertainment accent wall, featuring {wood_style}, "
-                    f"finished
+                    f"finished in {color_palette}, {accent_trim}, "
+                    f"sculptural organic curves, seamlessly integrated wall-mounted TV, "
+                    f"floating rounded pill credenza, soft concealed 2400K indirect warm halo ambient backlight, "
+                    f"soft natural morning window daylight, delicate shadows, hyper-realistic, 8k resolution, crisp architectural detail{custom_extra}"
+                )
+                
+                encoded_prompt = urllib.parse.quote(prompt)
+                image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=768&nologo=true&seed={rand_seed}"
+                
+                try:
+                    resp = requests.get(image_url, timeout=30)
+                    if resp.status_code == 200:
+                        st.image(resp.content, use_container_width=True)
+                        st.success("New aesthetic design generated!")
+                        
+                        st.download_button(
+                            label="💾 Download Render (PNG)",
+                            data=resp.content,
+                            file_name=f"Aesthetic_Design_{rand_seed}.png",
+                            mime="image/png"
+                        )
+                    else:
+                        st.error("Service busy. Please try generating again.")
+                except Exception:
+                    st.error("Image request timed out. Please click generate again.")
+
+    st.divider()
+    
+    # Material Breakdown
+    st.subheader("📋 Modern Millwork Specs & Cut Sheet")
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Wall Face Area", f"{sqft:.1f} sq.ft.")
+    m2.metric("Core Board Sheets (8x4)", f"{ply_sheets} Sheets")
+    m3.metric("Micro-Ribbed Battens", f"~{slat_linear_ft} RFT")
+    m4.metric("Diffuse LED Halo Channels", f"~{led_strip_ft:.1f} RFT")
+
+    # Budget Breakdown
+    st.subheader("💵 Financial Estimation (INR)")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Materials & Textures", f"₹{total_mat:,.0f}")
+    c2.metric("Artisan Joinery & Polish", f"₹{total_labor:,.0f}")
+    c3.metric("Ambient Halo Lighting", f"₹{total_led:,.0f}")
+    c4.metric("Estimated Client Cost", f"₹{grand_total:,.0f}")
+
+    quote_text = (
+        f"==========================================================\n"
+        f"       MODERN AESTHETIC INTERIOR DESIGN PROPOSAL\n"
+        f"==========================================================\n\n"
+        f"Style & Concept    : {wood_style}\n"
+        f"Palette & Finish   : {color_palette}\n"
+        f"Trim & Accents     : {accent_trim}\n"
+        f"Aesthetic Mood     : {vibe_theme}\n"
+        f"Substrate System   : {substrate}\n\n"
+        f"--- ROOM DIMENSIONS ---\n"
+        f"Surface Size       : {wall_w:.1f} ft (W) x {wall_h:.1f} ft (H)\n"
+        f"Total Area         : {sqft:.1f} sq.ft.\n\n"
+        f"--- PRODUCTION MATERIAL REQUISITION ---\n"
+        f"Core Substrate 8x4 : {ply_sheets} Sheets\n"
+        f"Fine Battens/Slats : ~{slat_linear_ft} Running Feet\n"
+        f"Concealed LED Track: {led_strip_ft:.1f} Running Feet\n\n"
+        f"--- COST ESTIMATE (INR) ---\n"
+        f"Core & Finish Cost : ₹{total_mat:,.2f}\n"
+        f"Artisan Labor      : ₹{total_labor:,.2f}\n"
+        f"Concealed Lighting : ₹{total_led:,.2f}\n"
+        f"----------------------------------------------------------\n"
+        f"ESTIMATED TOTAL    : ₹{grand_total:,.2f}\n"
+        f"==========================================================\n"
+    )
+
+    st.download_button(
+        label="📄 Download Client Proposal & Spec Sheet (.txt)",
+        data=quote_text,
+        file_name="Aesthetic_Design_Proposal.txt",
+        mime="text/plain"
+    )
+
+else:
+    st.info("👆 Upload an image or select a preset wall to begin.")
