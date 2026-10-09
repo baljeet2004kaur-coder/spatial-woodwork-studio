@@ -156,4 +156,57 @@ if active_image is not None:
                 encoded_p = urllib.parse.quote(clean_prompt)
                 headers = {"User-Agent": "Mozilla/5.0"}
                 
-                urls_to_try
+                candidate_urls = [
+                    f"https://image.pollinations.ai/prompt/{encoded_p}?width=800&height=600&nologo=true&seed={rand_seed}",
+                    f"https://image.pollinations.ai/prompt/{encoded_p}?width=768&height=512&seed={rand_seed}&model=turbo"
+                ]
+                
+                img_data = None
+                for url in candidate_urls:
+                    try:
+                        r = requests.get(url, headers=headers, timeout=20)
+                        if r.status_code == 200 and len(r.content) > 5000:
+                            img_data = r.content
+                            break
+                    except Exception:
+                        continue
+                
+                if img_data is None:
+                    fallback_url = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&q=80"
+                    try:
+                        r_fallback = requests.get(fallback_url, timeout=10)
+                        if r_fallback.status_code == 200:
+                            img_data = r_fallback.content
+                    except Exception:
+                        img_data = None
+                
+                if img_data:
+                    st.image(img_data, use_container_width=True)
+                    st.success("Design concept ready!")
+                    
+                    st.download_button(
+                        label="💾 Download Render (PNG)",
+                        data=img_data,
+                        file_name=f"Aesthetic_Design_{rand_seed}.png",
+                        mime="image/png"
+                    )
+                else:
+                    st.error("Connection interrupted. Please tap 'Generate Design' once again.")
+
+    st.divider()
+    
+    # Material Breakdown
+    st.subheader("📋 Modern Millwork Specs & Cut Sheet")
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Wall Face Area", f"{sqft:.1f} sq.ft.")
+    m2.metric("Core Board Sheets (8x4)", f"{ply_sheets} Sheets")
+    m3.metric("Micro-Ribbed Battens", f"~{slat_linear_ft} RFT")
+    m4.metric("Diffuse LED Halo Channels", f"~{led_strip_ft:.1f} RFT")
+
+    # Budget Breakdown
+    st.subheader("💵 Financial Estimation (INR)")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Materials & Textures", f"₹{total_mat:,.0f}")
+    c2.metric("Artisan Joinery & Polish", f"₹{total_labor:,.0f}")
+    c3.metric("Ambient Halo Lighting", f"₹{total_led:,.0f}")
+    c4.metric("Estimated Client
