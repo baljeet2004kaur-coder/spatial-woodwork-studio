@@ -3,6 +3,7 @@ import urllib.parse
 from PIL import Image
 import requests
 from io import BytesIO
+import random
 
 st.set_page_config(page_title="Spatial Woodwork Studio", layout="wide")
 
@@ -18,7 +19,8 @@ wood_style = st.sidebar.selectbox(
         "Vertical Fluted Slats",
         "Geometric Paneling",
         "Floating Bed Headboard",
-        "Classic Wainscoting"
+        "Classic Wainscoting",
+        "Curved Ribbed Wall Feature"
     ]
 )
 
@@ -28,7 +30,18 @@ wood_finish = st.sidebar.selectbox(
         "Warm Natural Teak",
         "Smoked Dark Walnut",
         "Scandinavian White Oak",
-        "Charcoal Ebonized Ash"
+        "Charcoal Ebonized Ash",
+        "Rich Honey Rosewood"
+    ]
+)
+
+design_mood = st.sidebar.selectbox(
+    "Interior Vibe / Aesthetic",
+    [
+        "Luxury Hotel Suite",
+        "Minimalist Japandi Zen",
+        "Contemporary Architectural Digest",
+        "Warm Moody Modern"
     ]
 )
 
@@ -47,7 +60,7 @@ sqft_labor_rate = st.sidebar.number_input("Carpenter Labor (per sq.ft)", min_val
 # Calculations
 sqft = wall_w * wall_h
 ply_sheets = int((sqft * 1.10) // 32) + 1
-slat_ft = int(wall_w * (wall_h / 0.5)) if "Slats" in wood_style else int(wall_w * 4)
+slat_ft = int(wall_w * (wall_h / 0.5)) if "Slats" in wood_style or "Ribbed" in wood_style else int(wall_w * 4)
 led_channel = f"{wall_w:.1f} Feet" if has_led else "None"
 
 total_material_cost = sqft * sqft_material_rate
@@ -72,7 +85,6 @@ else:
         "Select a Sample Wall:",
         ["Modern Plain White Wall", "Minimalist Master Bedroom Wall", "Living Room TV Background Wall"]
     )
-    # Built-in sample placeholders
     demo_urls = {
         "Modern Plain White Wall": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&q=80",
         "Minimalist Master Bedroom Wall": "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=80",
@@ -82,7 +94,7 @@ else:
         resp = requests.get(demo_urls[preset_choice])
         active_image = Image.open(BytesIO(resp.content))
     except Exception:
-        st.warning("Could not load preset image from internet. Please upload a photo instead.")
+        st.warning("Could not load preset image. Please upload a photo instead.")
 
 # ----------------- RENDERING & RESULTS -----------------
 if active_image is not None:
@@ -92,30 +104,36 @@ if active_image is not None:
         st.image(active_image, use_container_width=True)
     with col_r:
         st.subheader("Architectural Renovation")
-        led_text = "with warm concealed ambient backlighting LED strip" if has_led else "natural ambient light"
+        
+        led_text = "with concealed warm ambient 3000k LED strip lighting" if has_led else "natural balanced daylight"
+        
+        # Fresh random seed generated every time button is pressed
+        rand_seed = random.randint(1000, 999999)
+        
         prompt = (
-            f"Luxury interior architecture, modern accent wall featuring {wood_style} made of {wood_finish}, "
-            f"{led_text}, architectural digest style, photorealistic, elegant room perspective, 8k resolution"
+            f"High-end interior design photograph, {design_mood} aesthetic, "
+            f"accent wall featuring custom architectural {wood_style} crafted from {wood_finish}, "
+            f"{led_text}, master carpenter detailing, dramatic shadow play, photorealistic, 8k resolution"
         )
         
-        if st.button("✨ Generate Woodwork Transformation", type="primary"):
-            with st.spinner("Rendering architectural woodwork design..."):
+        if st.button("✨ Generate New Woodwork Variation", type="primary"):
+            with st.spinner("Rendering unique design variation..."):
                 encoded_prompt = urllib.parse.quote(prompt)
-                image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=800&height=600&nologo=true&seed=42"
+                image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=800&height=600&nologo=true&seed={rand_seed}"
                 resp = requests.get(image_url)
                 
                 if resp.status_code == 200:
                     st.image(resp.content, use_container_width=True)
-                    st.success("Transformation rendered successfully!")
+                    st.success(f"Generated design variation (Seed #{rand_seed})")
                     
                     st.divider()
                     st.subheader("📥 Export Deliverables")
                     d1, d2 = st.columns(2)
                     with d1:
                         st.download_button(
-                            label="💾 Download 3D Render (PNG)",
+                            label="💾 Download Render (PNG)",
                             data=resp.content,
-                            file_name=f"{wood_style}_{wood_finish}.png",
+                            file_name=f"{wood_style}_{wood_finish}_{rand_seed}.png",
                             mime="image/png"
                         )
                     with d2:
@@ -125,7 +143,8 @@ if active_image is not None:
                             f"=========================================\n\n"
                             f"Style: {wood_style}\n"
                             f"Finish: {wood_finish}\n"
-                            f"LED Channel: {led_channel}\n\n"
+                            f"Theme: {design_mood}\n"
+                            f"Lighting: {led_channel}\n\n"
                             f"Dimensions: {wall_w:.1f} ft x {wall_h:.1f} ft ({sqft:.1f} sq.ft.)\n\n"
                             f"--- BILL OF MATERIALS ---\n"
                             f"Plywood Core (8x4): {ply_sheets} Sheets\n"
@@ -139,7 +158,7 @@ if active_image is not None:
                         st.download_button(
                             label="📄 Download Estimate & Cut Sheet",
                             data=quote_sheet,
-                            file_name="Woodwork_Commercial_Quote.txt",
+                            file_name=f"Woodwork_Quote_{rand_seed}.txt",
                             mime="text/plain"
                         )
 
