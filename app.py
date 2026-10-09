@@ -142,14 +142,18 @@ if active_image is not None:
         custom_extra = f", featuring {custom_notes}" if custom_notes.strip() else ""
 
         if st.button("✨ Generate Design", type="primary"):
-            with st.spinner("Curating high-aesthetic modern render..."):
-                prompt = (
-                    f"Aesthetic modern interior, {vibe_theme}, "
-                    f"luxury minimalist TV wall, {wood_style}, "
-                    f"finished in {color_palette}, {accent_trim}, "
-                    f"sculptural organic curves, floating rounded credenza, "
-                    f"warm 2700k indirect LED halo lighting, soft daylight, 8k resolution{custom_extra}"
+            with st.spinner("Generating modern aesthetic design render..."):
+                rand_seed = random.randint(1000, 999999)
+                
+                clean_prompt = (
+                    f"award winning modern interior, {vibe_theme}, "
+                    f"minimalist aesthetic TV accent wall, {wood_style}, "
+                    f"material {color_palette}, {accent_trim}, "
+                    f"floating rounded credenza, warm ambient 2700k LED halo backlighting, "
+                    f"architectural digest showcase, photorealistic 8k{custom_extra}"
                 )
                 
-                encoded_prompt = urllib.parse.quote(prompt)
-                headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+                encoded_p = urllib.parse.quote(clean_prompt)
+                headers = {"User-Agent": "Mozilla/5.0"}
+                
+                urls_to_try
