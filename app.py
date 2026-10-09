@@ -104,7 +104,7 @@ if input_mode == "Upload Room Photo":
         try:
             active_image = Image.open(uploaded_file)
         except Exception:
-            st.error("⚠️ Invalid image format.")
+            st.error("⚠️ Invalid image format. Please upload a standard JPG or PNG.")
 else:
     preset_choice = st.selectbox(
         "Select Room Layout:",
@@ -120,3 +120,32 @@ else:
         "Cozy Studio Lounge Nook": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80"
     }
     try:
+        resp = requests.get(demo_urls[preset_choice], timeout=10)
+        active_image = Image.open(BytesIO(resp.content))
+    except Exception:
+        st.warning("Preset offline. Please upload a photo.")
+
+# ----------------- RENDERING & RESULTS -----------------
+if active_image is not None:
+    col_l, col_r = st.columns([1, 1.25])
+    with col_l:
+        st.subheader("Base Space Reference")
+        st.image(active_image, use_container_width=True)
+    with col_r:
+        st.subheader("Modern Aesthetic Transformation")
+        
+        custom_notes = st.text_input(
+            "Add Specific Design Customizations (Optional):",
+            placeholder="e.g. Add organic oval mirror, travertine ledge, pampas decor, flush OLED TV"
+        )
+        
+        custom_extra = f", featuring {custom_notes}" if custom_notes.strip() else ""
+
+        if st.button("✨ Generate Design", type="primary"):
+            with st.spinner("Curating high-aesthetic modern render..."):
+                rand_seed = random.randint(100000, 9999999)
+                
+                prompt = (
+                    f"Viral Pinterest interior aesthetic, Kinfolk style photography, {vibe_theme}, "
+                    f"ultra-modern minimalist TV entertainment accent wall, featuring {wood_style}, "
+                    f"finished
