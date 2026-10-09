@@ -36,7 +36,6 @@ wall_h = st.sidebar.number_input("Height (ft)", min_value=6.0, max_value=15.0, v
 sqft_mat_rate = st.sidebar.number_input("Material Rate (₹/sqft)", value=420, step=20)
 sqft_labor_rate = st.sidebar.number_input("Artisan Labor Rate (₹/sqft)", value=180, step=10)
 
-# Calculations
 sqft = wall_w * wall_h
 ply_sheets = int((sqft * 1.15) // 32) + 1
 slat_linear_ft = int(wall_w * (wall_h / 0.35))
@@ -47,7 +46,6 @@ cost_labor = sqft * sqft_labor_rate
 cost_led = led_strip_ft * 210
 grand_total = cost_mat + cost_labor + cost_led
 
-# Wall Presets & Upload
 input_mode = st.radio("Wall Input:", ["Curated Wall Preset", "Upload Photo"], horizontal=True)
 active_image = None
 chosen_room_type = "living room accent wall"
@@ -100,4 +98,73 @@ if active_image:
 
     with c2:
         st.subheader("Aesthetic Concept")
-        custom_notes = st.text_
+        custom_notes = st.text_input("Custom Details (Optional):", placeholder="e.g. travertine ledge, OLED TV, pampas decor")
+        note_str = f", {custom_notes}" if custom_notes.strip() else ""
+
+        if st.button("✨ Generate Design", type="primary"):
+            with st.spinner("Generating modern concept..."):
+                seed = random.randint(1000, 999999)
+                prompt = (
+                    f"cinematic indoor architectural photography, {chosen_room_type}, "
+                    f"bespoke millwork {wood_style}, palette {color_palette}, "
+                    f"concealed warm 2700k LED halo backlight glow, {vibe_theme}, "
+                    f"photorealistic 8k render, no outdoor{note_str}"
+                )
+                enc_p = urllib.parse.quote(prompt)
+                headers = {"User-Agent": "Mozilla/5.0"}
+                url_primary = f"https://image.pollinations.ai/prompt/{enc_p}?width=800&height=600&nologo=true&seed={seed}"
+                
+                img_data = None
+                try:
+                    res = requests.get(url_primary, headers=headers, timeout=20)
+                    if res.status_code == 200 and len(res.content) > 5000:
+                        img_data = res.content
+                except Exception:
+                    pass
+
+                if img_data is None:
+                    fb_url = "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=900&q=80"
+                    try:
+                        res_fb = requests.get(fb_url, timeout=10)
+                        if res_fb.status_code == 200:
+                            img_data = res_fb.content
+                    except Exception:
+                        pass
+
+                if img_data:
+                    st.image(img_data, use_container_width=True)
+                    st.success("Design concept ready!")
+                    st.download_button("💾 Save Render (PNG)", img_data, f"Design_{seed}.png", "image/png")
+                else:
+                    st.error("Server busy. Please click Generate Design once more.")
+
+    st.divider()
+    st.subheader("📋 Materials & Cut Sheet")
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Area", f"{sqft:.1f} sq.ft.")
+    m2.metric("Core Sheets (8x4)", f"{ply_sheets}")
+    m3.metric("Micro Slats", f"~{slat_linear_ft} RFT")
+    m4.metric("Halo LED", f"~{led_strip_ft:.1f} RFT")
+
+    st.subheader("💵 Project Budget")
+    b1, b2, b3, b4 = st.columns(4)
+    b1.metric("Materials", f"₹{cost_mat:,.0f}")
+    b1_extra = False
+    b2.metric("Labor", f"₹{cost_labor:,.0f}")
+    b3.metric("LED Track", f"₹{cost_led:,.0f}")
+    b4.metric("Total Estimate", f"₹{grand_total:,.0f}")
+
+    quote_body = (
+        f"AESTHETIC MILLWORK QUOTE\n"
+        f"Room Focus: {chosen_room_type}\n"
+        f"Style: {wood_style}\nPalette: {color_palette}\n"
+        f"Dimensions: {wall_w}ft x {wall_h}ft ({sqft:.1f} sq.ft)\n"
+        f"Core Sheets: {ply_sheets}\n"
+        f"Material Cost: ₹{cost_mat:,.2f}\n"
+        f"Labor Cost: ₹{cost_labor:,.2f}\n"
+        f"LED Channels: ₹{cost_led:,.2f}\n"
+        f"ESTIMATED TOTAL: ₹{grand_total:,.2f}\n"
+    )
+    st.download_button("📄 Download Client Quote (.txt)", quote_body, "Quote.txt", "text/plain")
+else:
+    st.info("Select preset wall or upload photo to begin.")
