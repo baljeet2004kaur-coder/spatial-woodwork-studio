@@ -153,38 +153,3 @@ if active_image is not None:
                 
                 encoded_prompt = urllib.parse.quote(prompt)
                 headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-                
-                resp = None
-                chosen_seed = None
-                
-                for attempt in range(3):
-                    rand_seed = random.randint(1000, 99999)
-                    image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=800&height=800&nologo=true&seed={rand_seed}"
-                    try:
-                        resp = requests.get(image_url, headers=headers, timeout=25)
-                        if resp.status_code == 200 and len(resp.content) > 5000:
-                            chosen_seed = rand_seed
-                            break
-                    except Exception:
-                        continue
-
-                if resp and resp.status_code == 200 and len(resp.content) > 5000:
-                    st.image(resp.content, use_container_width=True)
-                    st.success("New aesthetic design generated!")
-                    
-                    st.download_button(
-                        label="💾 Download Render (PNG)",
-                        data=resp.content,
-                        file_name=f"Aesthetic_Design_{chosen_seed}.png",
-                        mime="image/png"
-                    )
-                else:
-                    st.error("The image service is currently busy. Please click 'Generate Design' once more.")
-
-    st.divider()
-    
-    # Material Breakdown
-    st.subheader("📋 Modern Millwork Specs & Cut Sheet")
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Wall Face Area", f"{sqft:.1f} sq.ft.")
-    m2.metric("Core Board Sheets (8
