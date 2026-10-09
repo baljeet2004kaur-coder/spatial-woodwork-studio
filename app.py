@@ -68,55 +68,52 @@ grand_total = cost_mat + cost_labor + cost_led
 
 # ----------------- ROOM CONTEXT -----------------
 input_mode = st.radio("Wall Input:", ["Curated Indian Space Presets", "Upload My Wall Photo"], horizontal=True)
-active_image = None
-chosen_space_tag = "luxury Indian modern living room TV accent wall"
 
 preset_catalog = {
     "Living Room (Grand TV & Media Unit Wall)": {
-        "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80",
+        "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=70",
         "tag": "modern Indian luxury living room TV media accent wall, Italian marble panel, fluted louvers, floating console"
     },
     "Master Bedroom (Luxury Headboard Feature Wall)": {
-        "url": "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=900&q=80",
+        "url": "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=70",
         "tag": "modern Indian master bedroom feature headboard wall with fluted wood panelling and warm hidden LED cove glow"
     },
     "Dining Room (Contemporary Crockery & Accent Wall)": {
-        "url": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=900&q=80",
+        "url": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&q=70",
         "tag": "modern Indian dining area feature wall with integrated backlit niche and fluted wood textures"
     },
     "Pooja Room / Mandir Wall (Sacred Contemporary Corner)": {
-        "url": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=900&q=80",
+        "url": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&q=70",
         "tag": "contemporary Indian home pooja mandir sacred space, back-lit translucent onyx stone arch, subtle brass jali work"
     },
     "Entrance Foyer & Passage Wall": {
-        "url": "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=900&q=80",
+        "url": "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=800&q=70",
         "tag": "luxury Indian home entrance foyer accent wall with full-length backlit mirror and teak console"
     }
 }
+
+chosen_space_tag = "luxury Indian modern living room TV accent wall"
+img_display_source = None
 
 if input_mode == "Upload My Wall Photo":
     uploaded = st.file_uploader("Upload wall photo", type=["jpg", "png", "jpeg"])
     if uploaded:
         try:
-            active_image = Image.open(uploaded)
+            img_display_source = Image.open(uploaded)
         except Exception:
             st.error("Invalid image format.")
 else:
     preset_key = st.selectbox("Select Space Type:", list(preset_catalog.keys()))
     preset_data = preset_catalog[preset_key]
     chosen_space_tag = preset_data["tag"]
-    try:
-        r_preset = requests.get(preset_data["url"], timeout=10)
-        active_image = Image.open(BytesIO(r_preset.content))
-    except Exception:
-        st.warning("Preset offline. Please upload a photo.")
+    img_display_source = preset_data["url"]
 
 # ----------------- RENDERING & RESULTS -----------------
-if active_image:
+if img_display_source:
     c1, c2 = st.columns([1, 1.25])
     with c1:
         st.subheader("Reference Space")
-        st.image(active_image, use_container_width=True)
+        st.image(img_display_source, use_container_width=True)
 
     with c2:
         st.subheader("Architectural Transformation")
@@ -138,16 +135,16 @@ if active_image:
                 
                 img_data = None
                 try:
-                    res = requests.get(url_primary, headers=headers, timeout=20)
+                    res = requests.get(url_primary, headers=headers, timeout=12)
                     if res.status_code == 200 and len(res.content) > 5000:
                         img_data = res.content
                 except Exception:
                     pass
 
                 if img_data is None:
-                    fb_url = "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=900&q=80"
+                    fb_url = "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=70"
                     try:
-                        res_fb = requests.get(fb_url, timeout=10)
+                        res_fb = requests.get(fb_url, timeout=6)
                         if res_fb.status_code == 200:
                             img_data = res_fb.content
                     except Exception:
